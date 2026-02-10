@@ -135,7 +135,8 @@ export default function ChinaEChartsMap({ provinceData }: ChinaEChartsMapProps) 
 
   useEffect(() => {
     if (!geoJson) return
-    echarts.registerMap('china', geoJson)
+    // cast to any to satisfy TypeScript for echarts.registerMap
+    echarts.registerMap('china', geoJson as any)
   }, [geoJson])
 
   const option: echarts.EChartsOption = useMemo(() => {
