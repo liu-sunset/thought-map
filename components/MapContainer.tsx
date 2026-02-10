@@ -17,6 +17,7 @@ interface GeoInfo {
   allowed: boolean
   ip?: string
   isMock?: boolean
+  hasLitUpToday?: boolean
 }
 
 interface MapContainerProps {
@@ -28,9 +29,11 @@ export default function MapContainer({ initialProvinces, geoInfo }: MapContainer
   const { selectedProvince, setSelectedProvince, setGeoInfo } = useStore()
   const [provinces, setProvinces] = useState(initialProvinces)
   const [isMobile, setIsMobile] = useState(false)
+  const [hasLitUp, setHasLitUp] = useState(geoInfo.hasLitUpToday || false)
 
   useEffect(() => {
     setGeoInfo(geoInfo)
+    setHasLitUp(geoInfo.hasLitUpToday || false)
     if (geoInfo.province) {
        setSelectedProvince(geoInfo.province)
     }
@@ -42,12 +45,13 @@ export default function MapContainer({ initialProvinces, geoInfo }: MapContainer
   }, [geoInfo, setGeoInfo, setSelectedProvince])
 
   const handleLightUpSuccess = (newCount: number) => {
+    setHasLitUp(true)
     if (selectedProvince) {
       setProvinces(prev => prev.map(p => p.name === selectedProvince ? { ...p, count: newCount } : p))
     }
   }
 
-  const isCurrentLocation = geoInfo.province === selectedProvince || (geoInfo.isMock && geoInfo.province === selectedProvince)
+  const isCurrentLocation = geoInfo.province === selectedProvince || (!!geoInfo.isMock && geoInfo.province === selectedProvince)
 
   return (
     <div className="relative w-full h-screen bg-black overflow-hidden">
@@ -84,7 +88,7 @@ export default function MapContainer({ initialProvinces, geoInfo }: MapContainer
                <div className="flex-1 overflow-hidden">
                   <MessageList provinceName={selectedProvince} canPost={isCurrentLocation} />
                </div>
-               {isCurrentLocation && (
+               {isCurrentLocation && !hasLitUp && (
                  <div className="mt-6 flex justify-center">
                     <LightUpButton provinceName={selectedProvince} onSuccess={handleLightUpSuccess} />
                  </div>
@@ -110,7 +114,7 @@ export default function MapContainer({ initialProvinces, geoInfo }: MapContainer
                   <div className="flex-1 overflow-hidden">
                     <MessageList provinceName={selectedProvince} canPost={isCurrentLocation} />
                   </div>
-                  {isCurrentLocation && (
+                  {isCurrentLocation && !hasLitUp && (
                     <div className="mt-4 flex justify-center pb-8">
                        <LightUpButton provinceName={selectedProvince} onSuccess={handleLightUpSuccess} />
                     </div>
@@ -122,7 +126,7 @@ export default function MapContainer({ initialProvinces, geoInfo }: MapContainer
       )}
 
       {/* Floating Action Button */}
-      {geoInfo.allowed && !selectedProvince && geoInfo.province && (
+      {geoInfo.allowed && !selectedProvince && geoInfo.province && !hasLitUp && (
         <div className="absolute bottom-10 right-10 animate-bounce z-10">
            <LightUpButton provinceName={geoInfo.province} onSuccess={handleLightUpSuccess} />
         </div>

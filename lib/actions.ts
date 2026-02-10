@@ -39,11 +39,23 @@ export async function getGeoInfo() {
       }
     })
     if (province) {
-      return { province: province.name, cnName: province.cnName, allowed: true, ip, isMock }
+      // Check if lit up today
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      
+      const existingLog = await prisma.ipLog.findFirst({
+        where: {
+          ipHash: ip,
+          action: 'LIGHT_UP',
+          createdAt: { gte: today }
+        }
+      })
+      
+      return { province: province.name, cnName: province.cnName, allowed: true, ip, isMock, hasLitUpToday: !!existingLog }
     }
   }
 
-  return { province: null, allowed: false, ip, isMock }
+  return { province: null, allowed: false, ip, isMock, hasLitUpToday: false }
 }
 
 export async function lightUpProvince(provinceName: string) {

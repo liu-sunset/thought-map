@@ -9,6 +9,7 @@ interface AppState {
     allowed: boolean
     ip?: string
     isMock?: boolean
+    hasLitUpToday?: boolean
   } | null
   setGeoInfo: (info: AppState['geoInfo']) => void
 }
