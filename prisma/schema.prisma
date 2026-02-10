@@ -1,0 +1,41 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Province {
+  id        String   @id @default(cuid())
+  name      String   @unique // e.g., "Beijing", "Guangdong"
+  cnName    String   // e.g., "北京", "广东"
+  count     Int      @default(0) // Total "Light Ups"
+  level     Int      @default(0) // Calculated level for color intensity (0-5)
+  messages  Message[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Message {
+  id         String   @id @default(cuid())
+  content    String
+  province   Province @relation(fields: [provinceId], references: [id])
+  provinceId String
+  ipHash     String   // Anonymized IP hash for basic moderation
+  createdAt  DateTime @default(now())
+  
+  @@index([provinceId])
+}
+
+model IpLog {
+  id         String   @id @default(cuid())
+  ipHash     String
+  action     String   // "LIGHT_UP"
+  createdAt  DateTime @default(now())
+  
+  // Composite index to check "Did this IP light up today?" quickly
+  // We will query by ipHash + date in code
+}
